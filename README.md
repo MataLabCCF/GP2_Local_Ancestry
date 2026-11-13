@@ -44,6 +44,10 @@ That is why we must perform the QC with the samples altogether, and thereafter -
 
 Since we are excluding the EUR samples (as already classified by genotools for GP2 default QC pipeline), the analysis would be, in principle, more computationally affordable. 
 
+For the QC we are going to use a pipeline designed for admixed populations
+
+---
+
 # Tractor-Mix, binary phenotype
 
 Case/control Tractor-Mix run. The null model is a logistic mixed model fitted
@@ -392,11 +396,6 @@ in the file.
 
 
 
-For the QC we are going to use a pipeline designed for admixed populations
-
----
-
-# Artificial Intelligence (AI) use disclosure
 
 
 ## AI use disclosure
