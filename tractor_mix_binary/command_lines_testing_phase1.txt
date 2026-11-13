@@ -1,0 +1,64 @@
+#run the commands for edditing the covariate to get it in the right format with cut_covar_new.py
+
+#step 0
+python 00_define_samples.py --covar covar_phase1_4_tractor.tsv  \
+    --psam typed/merged_typed.psam \
+    --msp-template gnomix/LPD_chrom{chrom}/query_results.msp \
+    --vcf-template imputed/chr{chrom}.dose.vcf.gz \
+    --model        model_covariates.txt \
+    --outdir samples 2>&1 | tee 00_define_samples.log
+
+#step 1
+GCTA=/path/to/gcta bash 01_make_grm_gcta.sh typed/merged_typed samples/analysis_samples.txt gcta_grm  2>&1 | tee 01_make_grm_gcta.log
+
+#step 2
+Rscript 02_fit_null_binary.r \
+     --covar   covar_phase1_4_tractor.tsv \
+     --model   model_covariates.txt \
+     --samples samples/analysis_samples.txt \
+     --grm     gcta_grm/grm \
+     --out     gmmat_null/gmmat_null_N0.rds 2>&1 | tee 02_fit_null_binary.log
+
+#step 3
+mkdir logs 
+
+sbatch --array=21-22 03_subset_vcf.sh imputed/chr{chrom}.dose.vcf.gz samples/analysis_samples.txt vcf_files 
+
+#step 4 
+python3 04_prep_msp.py \
+    --vcf-template 'imputed/chr{chrom}.dose.vcf.gz' \
+    --msp-template 'gnomix/LPD_chrom{chrom}/query_results.msp' \
+    --samples      samples/analysis_samples.txt \
+    --outdir       msp_ordered 2>&1 | tee 04_prep_msp.log
+
+#step 5 
+#after compiling extract_tracts.c and making the binary excecutable 
+
+sbatch --array=21-22 05_extract_tracts.sh vcf_files/ msp_ordered/ extracted_tracts 2>&1 | tee 05_extract_tracts.log
+
+#step 6 
+sbatch --array=21-22 ./06_filter_split_tracts.sh extracted_tracts tracts_filtered
+
+#step 7
+#the order of the anc labels could be taken from the print statements from step 4
+python3 ./07_submit_tractormix.py \
+    --scans N0_cond \
+    --null-template     'gmmat_null/gmmat_null_{model}.rds' \
+    --dosage-template   'tracts_filtered/chr{chrom}/chr{chrom}.analysis.part{part}.anc{anc}.dosage.txt.gz' \
+    --hapcount-template 'tracts_filtered/chr{chrom}/chr{chrom}.analysis.part{part}.anc{anc}.hapcount.txt.gz' \
+    --rscript           tractormix_patched/tractormix_single_chr.r \
+    --tractormix-dir    tractormix_patched/ \
+    --n-anc 3 --anc-labels NAT,AFR,EUR \
+    --chrs 21,22 \
+    --parts-per-job 1 \
+    --ac-threshold 20 \ 
+    --cpus 8 \
+    --mem 16G \
+    --outdir assoc_tm 2>&1 | tee 07_submit_tractormix.log
+
+#step 8
+CHRS="21 22" bash 08_combine_tractormix.sh assoc_tm N0_cond tracts_filtered/ ./combined_parts/N0_cond_genome.tsv.gz 2>&1 | tee 08_combine_tractormix.log
+
+#step 9 
+CHRS="21 22" bash 09_split_sumstats.sh ./combined_parts/N0_cond_genome.tsv.gz tracts_filtered/ 2>&1 | tee 09_split_sumstats.log
+#here the outputs are in the same directory as the input, with the prefix N0_cond_genome

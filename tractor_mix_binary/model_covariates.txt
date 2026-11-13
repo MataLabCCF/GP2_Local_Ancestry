@@ -1,0 +1,18 @@
+# Covariates of the null model, read by 00_define_samples.py and 02_fit_null_binary.r.
+#
+# One covariate per line: the column name in the covariate file, then its type.
+#   categorical    entered as a factor: one coefficient per value, except the
+#                  first in sorted order, which is the reference
+#   quantitative   entered as a number: one linear coefficient
+#
+# PCs get their own line: "PCs" and how many to use. The columns can be named
+# GCTA_PC1.. or PC1.. in the covariate file.
+#
+# IID and STATUS are not covariates and must not be listed here.
+
+SEX     categorical
+PCs     20
+
+# Examples:
+# AGE     quantitative
+# SITE    categorical
