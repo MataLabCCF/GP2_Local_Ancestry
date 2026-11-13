@@ -395,3 +395,18 @@ in the file.
 For the QC we are going to use a pipeline designed for admixed populations
 
 ---
+
+# Artificial Intelligence (AI) use disclosure
+
+
+## AI use disclosure
+
+Generative AI (Claude, Anthropic, via Claude Code) was used to help write and
+document the code in this repository, including wrapper and SLURM submission
+scripts, input checks, command-line examples and comments. The study design,
+methods, parameter choices, and scientific interpretation are the author's own. The authors have
+reviewed, edited and tested the code, and take full responsibility for the
+results and for any inconsistencies in the code.
+
+
+
