@@ -5,6 +5,7 @@
 ---
 ## Reference panel assembly 
 
+Pending to add..
 ---
 
 ## QC of non-European populations altogether
